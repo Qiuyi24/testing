@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DoublyLinkedListWithErrors
 {
-   public class DLList
+      public class DLList
     {
         public DLLNode head; // pointer to the head of the list
         public DLLNode tail; // pointer to the tail of the list
@@ -23,17 +23,50 @@ namespace DoublyLinkedListWithErrors
             {
                 head = p;
                 tail = p;
-                return;
-
             }
             else
             {
                 tail.next = p;
-                tail = p;
+                //tail = p;      // bug2: first p.previous = tail and then tail = p
+                //p.previous = tail;
                 p.previous = tail;
-                return;
+                tail = p;
             }
         } // end of addToTail
+
+
+        /*-------------------------------------------------
+         * Return null if the string does not exist.
+         * ----------------------------------------------*/
+        public DLLNode search(int num)
+        {
+            DLLNode p = head;
+            while (p != null)
+            {
+                //p = p.next;  // bug3: if (p.num == num) break first and then if (p.num == num) break;
+                //if (p.num == num) break;
+                if (p.num == num) break;
+                p = p.next;
+            }
+            return (p);
+        } // end of search (return pointer to the node);
+
+
+
+        public int total()
+        {
+            DLLNode p = head;
+            int tot = 0;
+            while (p != null)
+            {
+                //tot += p.num; // bug4: p = p.next.next should be p = p.next
+                //p = p.next.next;
+                tot += p.num;
+                p = p.next;
+            }
+            return (tot);
+        } // end of total
+
 
         public void addToHead(DLLNode p)
         {
@@ -50,69 +83,20 @@ namespace DoublyLinkedListWithErrors
             }
         } // end of addToHead
 
-        public void removeHead()//bug,少了一个e,only applied for two nodes and more in the list
-                                //没有考虑只有node的时候
-                                //if (this.head == null) return;
-                                //this.head = this.head.next;
-                                //this.head.previous = null;
-        {
-            if (head == null)
-                return;
-            if (head.next == null) // this.head == this.tail
-            {
-
-                // list only has one node
-                head = tail = null;
-            }
-            else
-            {
-                head = head.next;
-                head.previous = null;
-            }
-        } // removeHead
-
-        public void removeTail()
-        {
-            // bug7: only applied for one node and non-node in the list
-            //if (this.tail == null) return;
-            //if (this.head == this.tail)
-            //{
-            //    this.head = null;
-            //    this.tail = null;
-            //    return;
-            //}
-            if (this.tail == null) return;
-            if (this.head == this.tail)
-            {
-                this.head = null;
-                this.tail = null;
-                return;
-            }
-            else
-            {
-                tail = tail.previous;
-                tail.next = null;
-            }
-
-        } // remove tail
-
-        /*-------------------------------------------------
-         * Return null if the string does not exist.
-         * ----------------------------------------------*/
-        public DLLNode search(int num)
-        {
-            DLLNode p = head;
-            while (p != null)
-            {
-               
-                if (p.num == num) break;//如果在链表中找到了这一个数字，那我就跳出这个链表，表示我已经找到了这个数字
-                p = p.next;             //bug 测试后发现p 的顺序和if互换一下
-            }
-            return (p);
-        } // end of search (return pionter to the node);在双向链表中寻找有没有这个数字
 
         public void removeNode(DLLNode p)
         { // removing the node p.
+
+            // bug5: need to look for the position of p in the list first
+            // ==========================================================
+            DLLNode searchP = this.head;
+            while (searchP != null)
+            {
+                if (searchP == p) break;
+                searchP = searchP.next;
+            }
+            if (searchP == null) return;
+            // ==========================================================
 
             if (p.next == null)
             {
@@ -135,18 +119,51 @@ namespace DoublyLinkedListWithErrors
             return;
         } // end of remove a node
 
-        public int total()
+
+
+        public void removeHead()
         {
-            DLLNode p = head;
-            int tot = 0;
-            while (p != null)
+            // bug6: only applied for two nodes and more in the list
+            //if (this.head == null) return;
+            //this.head = this.head.next;
+            //this.head.previous = null;
+            if (head == null)
+                throw new InvalidOperationException("Cannot remove head from an empty list.");
+            if (head.next == null) // this.head == this.tail
             {
-                //tot += p.num; // bug4: p = p.next.next should be p = p.next
-                //p = p.next.next;
-                tot += p.num;
-                p = p.next;//不可以逐个加，需要按照顺序，不可以跳顺序
+                // list only has one node
+                head = tail = null;
             }
-            return (tot);
-        } // end of total
+            else
+            {
+                head = head.next;
+                head.previous = null;
+            }
+        } // removeHead
+
+        public void removeTail()
+        {
+            // bug7: only applied for one node and non-node in the list
+            //if (this.tail == null) return;
+            //if (this.head == this.tail)
+            //{
+            //    this.head = null;
+            //    this.tail = null;
+            //    return;
+            //}
+            if (this.tail == null) throw new InvalidOperationException("Cannot remove tail from an empty list."); 
+            if (this.head == this.tail)
+            {
+                this.head = null;
+                this.tail = null;
+                return;
+            }
+            else
+            {
+                tail = tail.previous;
+                tail.next = null;
+            }
+
+        } // remove tail
     } // end of DLList class
 }
